@@ -1,0 +1,62 @@
+# Maintainer: Maksim Bondarenkov <maksapple2306@gmail.com>
+
+_realname=turbo
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.0.1
+pkgrel=1
+pkgdesc="Incremental bundler and build system optimized for JavaScript and TypeScript (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64')
+url='https://turbo.build'
+msys2_repository_url='https://github.com/vercel/turbo'
+license=('spdx:MPL-2.0')
+depends=("${MINGW_PACKAGE_PREFIX}-fontconfig"
+         "${MINGW_PACKAGE_PREFIX}-freetype"
+         "${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-libgit2"
+         "${MINGW_PACKAGE_PREFIX}-zstd")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf"
+             "${MINGW_PACKAGE_PREFIX}-openssl")
+options=('!strip')
+source=("https://github.com/vercel/turbo/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
+noextract=("${_realname}-${pkgver}.tar.gz")
+sha256sums=('639f9a91f2f0c3a830f818e3cf060986637b3d5d9fad5eef182fdeea87c37afd')
+
+_env() {
+  export LIBZ_SYS_STATIC=0
+  export LIBGIT2_NO_VENDOR=1
+  export OPENSSL_NO_VENDOR=1
+  export PKG_CONFIG_ALL_DYNAMIC=1
+  export ZSTD_SYS_USE_PKG_CONFIG=1
+}
+
+prepare() {
+  tar -xzf "${_realname}-${pkgver}.tar.gz" || true
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  _env
+  cargo build --frozen --profile release-turborepo
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  _env
+  cargo install \
+    --offline \
+    --no-track \
+    --frozen \
+    --root "${pkgdir}${MINGW_PREFIX}" \
+    --profile release-turborepo \
+    turbo
+
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
