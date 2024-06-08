@@ -1,0 +1,52 @@
+# Maintainer: Maksim Bondarenkov <maksapple2306@gmail.com>
+
+_realname=muon
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Some package (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://muon.build'
+license=('LICENSE')
+msys2_repository_url='https://git.sr.ht/~lattis/muon'
+makedepends=("${MINGW_PACKAGE_PREFIX}-meson"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-scdoc"
+             "${MINGW_PACKAGE_PREFIX}-python-yaml"
+             'git')
+depends=("${MINGW_PACKAGE_PREFIX}-ninja"
+         "${MINGW_PACKAGE_PREFIX}-pkgconf"
+         "${MINGW_PACKAGE_PREFIX}-curl"
+         "${MINGW_PACKAGE_PREFIX}-libarchive")
+source=("muon::git+${msys2_repository_url}#tag=${pkgver}")
+sha256sums=('1476cf7f14f5d33e20ccced13afe0520c18100747437d3f581a3fe7d5ff2da81')
+
+build() {
+  export CFLAGS+=" -Wno-incompatible-function-pointer-types"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    meson setup \
+      --prefix="${MINGW_PREFIX}" \
+      --wrap-mode=nodownload \
+      --default-library=shared \
+      --auto-features=enabled \
+      --buildtype=plain \
+      -Dtracy=disabled \
+      -Dbestline=disabled \
+      "build-${MSYSTEM}" \
+      "${_realname}"
+
+  meson compile -C "build-${MSYSTEM}"
+}
+
+check() {
+  meson test -C "build-${MSYSTEM}"
+}
+
+package() {
+  meson install -C "build-${MSYSTEM}" --destdir "${pkgdir}"
+
+  install -Dm644 "${srcdir}/${_realname}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+}
