@@ -1,0 +1,40 @@
+diff --git a/build b/build
+index 2216c0e48..ba49835b6 100755
+--- a/build
++++ b/build
+@@ -25,6 +25,8 @@ esac
+ mkdir -p "$ROOTDIR/out/build-llvm-host"
+ cd "$ROOTDIR/out/build-llvm-host"
+ cmake "$ROOTDIR/llvm" \
++  -DCMAKE_C_COMPILER="clang" \
++  -DCMAKE_CXX_COMPILER="clang++" \
+   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
+   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
+   -DCMAKE_BUILD_TYPE=Release \
+@@ -58,6 +60,8 @@ cmake --build . --target install
+ mkdir -p "$ROOTDIR/out/build-zig-host"
+ cd "$ROOTDIR/out/build-zig-host"
+ cmake "$ROOTDIR/zig" \
++  -DCMAKE_C_COMPILER="clang" \
++  -DCMAKE_CXX_COMPILER="clang++" \
+   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
+   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
+   -DCMAKE_BUILD_TYPE=Release \
+@@ -72,6 +76,8 @@ ZIG="$ROOTDIR/out/host/bin/zig"
+ mkdir -p "$ROOTDIR/out/build-zlib-$TARGET-$MCPU"
+ cd "$ROOTDIR/out/build-zlib-$TARGET-$MCPU"
+ cmake "$ROOTDIR/zlib" \
++  -DCMAKE_C_COMPILER="clang" \
++  -DCMAKE_CXX_COMPILER="clang++" \
+   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/$TARGET-$MCPU" \
+   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/$TARGET-$MCPU" \
+   -DCMAKE_BUILD_TYPE=Release \
+@@ -134,6 +140,8 @@ $ZIG build-lib \
+ mkdir -p "$ROOTDIR/out/build-llvm-$TARGET-$MCPU"
+ cd "$ROOTDIR/out/build-llvm-$TARGET-$MCPU"
+ cmake "$ROOTDIR/llvm" \
++  -DCMAKE_C_COMPILER="clang" \
++  -DCMAKE_CXX_COMPILER="clang++" \
+   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/$TARGET-$MCPU" \
+   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/$TARGET-$MCPU" \
+   -DCMAKE_BUILD_TYPE=Release \
