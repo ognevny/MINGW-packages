@@ -20,7 +20,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ ${CARCH} == i686 ]] || echo "${MINGW_PACKAGE_PREFIX}-rust-wasm")
          "${MINGW_PACKAGE_PREFIX}-rust-src")
 pkgver=1.80.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Systems programming language focused on safety, speed and concurrency (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
@@ -59,7 +59,7 @@ noextract=(${_realname}c-${pkgver}-src.tar.gz)
 sha256sums=('6f606c193f230f6b2cae4576f7b24d50f5f9b25dff11dbf9b22f787d3521d672'
             'SKIP'
             '24ef6d949c0b5b1940c1d6a7aad78d86012152fb8845a1644bc939350d7b75e2'
-            '829d72862663cb2002f57aee3471b496137f9093e3330ed8f5db80f37663eaf7'
+            '6c8130d4b1fe89609d37952a36a626a23902c70073d6d0751f2488d88920dbf8'
             '7cb1773c288ffb1c1e751edc49b1890c84bf9c362742bc5225d19d474edb73a0'
             '56882f1a0f1404c10c7726d6cc37444f2b343e72b969badfcb43760f80db0f32'
             '7d1c4e49524b835a8eadc961b39f5594b12a522a1e24368999be2c7e85399e4e'
@@ -185,6 +185,7 @@ build() {
 
   export RUST_BACKTRACE=1
 
+  # substitute the values in config.toml
   local _prefix="$(cygpath -m ${MINGW_PREFIX})"
   cp -f "${srcdir}/config.toml" "${srcdir}/${_realname}c-${pkgver}-src"
   sed -i "s|%PREFIX%|${_prefix}|g" "${srcdir}/${_realname}c-${pkgver}-src/config.toml"
@@ -249,8 +250,6 @@ package_rust() {
   cd "${srcdir}/${MSYSTEM}"
 
   cp -a dest-rust/* "$pkgdir"
-  install -Dm644 ${srcdir}/${_realname}c-${pkgver}-src/LICENSE-APACHE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE-APACHE"
-  install -Dm644 ${srcdir}/${_realname}c-${pkgver}-src/LICENSE-MIT "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE-MIT"
 
   # delete unnecessary files, e.g. components and manifest files only used for the uninstall script
   cd "$pkgdir"/${MINGW_PREFIX}/lib/rustlib
@@ -266,6 +265,8 @@ package_rust-wasm() {
   depends=("${MINGW_PACKAGE_PREFIX}-lld"
            "${MINGW_PACKAGE_PREFIX}-rust"
            "${MINGW_PACKAGE_PREFIX}-wasm-component-ld")
+  # stripping files fail
+  options=('!strip')
 
   cd "${srcdir}/${MSYSTEM}"
 
@@ -282,8 +283,8 @@ package_rust-src() {
   install -Dm644 "${srcdir}"/${_realname}c-${pkgver}-src/LICENSE-APACHE "${pkgdir}${MINGW_PREFIX}/share/licenses/$pkgname/LICENSE-APACHE"
   install -Dm644 "${srcdir}"/${_realname}c-${pkgver}-src/LICENSE-MIT "${pkgdir}${MINGW_PREFIX}/share/licenses/$pkgname/LICENSE-MIT"
 
-  install -d "${pkgdir}/${MINGW_PREFIX}/lib/rustlib/"
-  cp -a dest-src "${pkgdir}/${MINGW_PREFIX}/lib/rustlib/src"
+  install -d "${pkgdir}${MINGW_PREFIX}/lib/rustlib/"
+  cp -a dest-src "${pkgdir}${MINGW_PREFIX}/lib/rustlib/src"
 }
 
 # template start; name=mingw-w64-splitpkg-wrappers; version=1.0;
