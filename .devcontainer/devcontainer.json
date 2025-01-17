@@ -9,11 +9,11 @@
                         "path": "msys2",
                         "env": {
                             "MSYSTEM": "UCRT64"
-                        }
+       https://containers.dev/implementors/json_reference/                 }
                     },
                     "MSYS2-CLANG64": {
                         "path": "msys2",
-                        "env": {
+                        "env": {treychimi.cmc@icloud.com
                             "MSYSTEM": "CLANG64"
                         }
                     }
