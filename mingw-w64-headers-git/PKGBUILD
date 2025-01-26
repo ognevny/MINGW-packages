@@ -4,9 +4,9 @@ _realname=headers
 pkgbase=mingw-w64-${_realname}-git
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
 pkgdesc="MinGW-w64 headers for Windows (mingw-w64)"
-pkgver=12.0.0.r473.gce0d0bfb7
-pkgrel=1
-_commit='ce0d0bfb705a74c6da90e539c7f7291785cfda83'
+pkgver=12.0.0.r129.g4ef04b0a7
+pkgrel=100
+_commit='4ef04b0a7f7a20735de2f58b5c0496fcb4c7d191'
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://www.mingw-w64.org/"
@@ -19,19 +19,47 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-tools"
 provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 options=('!strip' '!emptydirs')
+# patches are taken from
+# https://gitlab.torproject.org/tpo/applications/tor-browser-build/-/tree/main/projects/mingw-w64-clang
 source=("mingw-w64"::"git+https://git.code.sf.net/p/mingw-w64/mingw-w64#commit=$_commit"
-        0001-remove-ireference-boolean.patch)
-sha256sums=('bd2ea400a04e876c9c526d01297a8798c5c6ee601348c63b5dd34f79e6b72f67'
-            'cad48616325b5e70afa4e02424021fc8d54e17dcbf86eae3df990d3500080236')
+        "mingw-dwrite_3.patch"
+        "mingw-unknown.patch"
+        "mingw-enum.patch"
+        "mingw-widl.patch"
+        "mingw-composition.patch"
+        "mingw-webrtc.patch"
+        "https://github.com/mingw-w64/mingw-w64/commit/99684a93993bd8288993c0f47014624523bca0cf.patch")
+sha256sums=('3c2c0ff987b040b9a2590a6fe94c95b0785a0b3ef8bd169e0813febf3d0ea319'
+            '446586648825e77ff5faa2ed42e9bf3ebb1bdbb2a0924b0dc37e81744675c240'
+            '085287b6eac989fd4db0fc9882591bf60df490c98b2bb618d888197515cdf918'
+            '75167a0c1f4c9d95f17869bec7a7beb5d2375c8248901924e16b4987d742e8cd'
+            '1d6ec40b06829f65ae9ec89013a1a4fdaa879c5abd515cc1d94528e174a2e73f'
+            'd0c969e7517c68da54b9982b63efb056dfc7fe5c83e7a2e03a777720397c22ee'
+            'b48258a7ba9ab865af6f07c5a16dbc9b9d752df0774bbdd963eaf8f696d97aa7'
+            'cb41451b58e890638a0652e6fc82a1cbb39fc54a9c82f16fcb8b1a94b907a4ac')
 
 pkgver() {
   cd "${srcdir}/mingw-w64"
   git describe --long ${_commit} | sed 's/\([^-]*-g\)/r\1/;s/-/./g;s/^v//g'
 }
 
+_apply_git_with_msg() {
+  for _patch in "$@"; do
+    msg2 "Applying ${_patch}"
+    git apply "${srcdir}/${_patch}"
+  done
+}
+
 prepare() {
   cd "${srcdir}/mingw-w64"
-  git apply "${srcdir}/0001-remove-ireference-boolean.patch"
+  _apply_git_with_msg \
+    mingw-dwrite_3.patch \
+    mingw-unknown.patch \
+    mingw-enum.patch \
+    mingw-widl.patch \
+    mingw-composition.patch \
+    mingw-webrtc.patch \
+    99684a93993bd8288993c0f47014624523bca0cf.patch
 }
 
 build() {
