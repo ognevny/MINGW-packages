@@ -96,7 +96,7 @@ build() {
   # apply RUSTFLAGS from .cargo/config.toml instead of env var
   unset RUSTFLAGS
 
-  cargo build --release --frozen -p zed
+  cargo build --verbose --release --frozen -p zed
 }
 
 check() {
