@@ -18,7 +18,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-rust-wasm" \
          "${MINGW_PACKAGE_PREFIX}-rust-src"))
 pkgver=1.86.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Systems programming language focused on safety, speed and concurrency (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -53,7 +53,7 @@ source=("${rust_dist_server}/${_realname}c-${pkgver}-src.tar.gz"{,.asc}
 noextract=(${_realname}c-${pkgver}-src.tar.gz)
 sha256sums=('022a27286df67900a044d227d9db69d4732ec3d833e4ffc259c4425ed71eed80'
             'SKIP'
-            '28c3e6d712d541b301e1ae5c9e9385996afd8b2e4fa34b86393c0ac79cec15e7'
+            '1f582c19fd2c68ce5d9af84f918f0cc9ce38a5288fd4d735c13ecd305a968615'
             '7cb1773c288ffb1c1e751edc49b1890c84bf9c362742bc5225d19d474edb73a0'
             '56882f1a0f1404c10c7726d6cc37444f2b343e72b969badfcb43760f80db0f32'
             '98bc3f2bd7371a5b8d14fd7b03bf05574e206d1d9e52bcfbe66d71398504da3c'
