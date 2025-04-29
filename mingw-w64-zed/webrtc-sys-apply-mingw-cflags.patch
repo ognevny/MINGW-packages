@@ -1,0 +1,11 @@
+--- a/webrtc-sys/build.rs
++++ b/webrtc-sys/build.rs
+@@ -128,7 +128,7 @@
+             println!("cargo:rustc-link-lib=dylib=dwmapi");
+             println!("cargo:rustc-link-lib=dylib=shcore");
+ 
+-            builder.flag("/std:c++20").flag("/EHsc");
++            builder.flag("-std=c++20");
+         }
+         "linux" => {
+             println!("cargo:rustc-link-lib=dylib=rt");

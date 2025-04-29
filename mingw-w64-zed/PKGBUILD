@@ -6,6 +6,8 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-docs")
 pkgver=0.183.11
 pkgrel=1
+_webrtc_ver=b99fd2c-6
+_webrtc_sys_ver=80bb8f4
 pkgdesc="A high-performance, multiplayer code editor (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64') # clangarm64 crashes at startup https://github.com/kvark/blade/issues/222
@@ -25,6 +27,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-libgit2"
          "${MINGW_PACKAGE_PREFIX}-zstd")
 makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
              "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-pkgconf"
              "${MINGW_PACKAGE_PREFIX}-protobuf"
              #"${MINGW_PACKAGE_PREFIX}-sqlite3"
@@ -43,15 +46,33 @@ optdepends=("${MINGW_PACKAGE_PREFIX}-clang-tools-extra: for a better C/C++ langu
 source=("git+${msys2_repository_url}.git#tag=v${pkgver}"
         "git+https://github.com/aws/aws-lc-rs.git#tag=aws-lc-sys/v0.28.0"
         "git+https://github.com/aws/aws-lc.git"
+        "git+https://github.com/zed-industries/livekit-rust-sdks.git#commit=${_webrtc_sys_ver}"
         "zstd-sys.tar.gz::https://crates.io/api/v1/crates/zstd-sys/2.0.15+zstd.1.5.7/download"
         "aws-lc-clang-build.patch"
+        "webrtc-sys-apply-mingw-cflags.patch"
+        "zed-ungate-webrtc-code.patch"
         "zstd-sys-remove-statik.patch")
 sha256sums=('42a694fdfda302655de608feab456773d8005fbae5a379c7fdfaaa4bfb75e020'
             '9262e298d58ea2eb7921c62ec94f5b0e9528cb6341b437c143559fa1cca2a4cc'
             'SKIP'
+            'fa8c025484443cd76456c82ccd04f9ee8d2a50169bfbb3b955cab8140d522e9e'
             'eb81183ddd97d0c74cedf1d50d85c8d08c1b8b68ee863bdee9e706eedba1a237'
             '2e3d7ef6fdb3ef8a2ec11207e8120ea34553888116ea8a032cb425a8a6261c39'
+            '8a8dd758be75b7b1057f3e5cf0b38c4d73cc5a376b3206b2b1be5b700f27f2d8'
+            '88524c25cb3729c3690324fc4861485dee16ca5a3051bd4191b55029ef50b763'
             '48f4900ceb02d3aaf9a1020f33d56629156e96759f456c0e7ca18bfcf910767b')
+# download webrtc to build collab
+case ${CARCH} in
+  x86_64)
+    _webrtc_arch=x64
+    sha256sums+=('eb7dcc30bc7c3f331acd8648495b420e7f2445f5d8d49ddb755026b2b572495d')
+  ;;
+  aarch64)
+    _webrtc_arch=arm64
+    sha256sums+=('69bafa396c4032b06468c396da6a05a431761631f47a1e5d1e8a2cc6c3dd6fe9')
+  ;;
+esac
+source+=("https://github.com/livekit/rust-sdks/releases/download/webrtc-${_webrtc_ver}/webrtc-win-${_webrtc_arch}-release.zip")
 
 prepare() {
   (cd aws-lc-rs
@@ -65,11 +86,18 @@ prepare() {
   # link system deps dynamically
   patch -d "../zstd-sys-2.0.15+zstd.1.5.7" -i "../zstd-sys-remove-statik.patch"
   # do not use pthread for clang
-  if [[ ${CC} == clang ]]; then
-    patch -d "../aws-lc-rs/aws-lc-sys/aws-lc" -p1 -i "${srcdir}/aws-lc-clang-build.patch"
-  fi
+  patch -d "../aws-lc-rs/aws-lc-sys/aws-lc" -p1 -i "${srcdir}/aws-lc-clang-build.patch"
+  # do not use MSVC-specific cflags for webrtc cxxbridge
+  patch -d "../livekit-rust-sdks" -p1 -i "../webrtc-sys-apply-mingw-cflags.patch"
+  # ungate code that removes collab support for our environment
+  patch -Np1 -i "../zed-ungate-webrtc-code.patch"
   # use patched *-sys crates
   sed -i '/\[patch\.crates-io\]/a zstd-sys = { path = "../zstd-sys-2.0.15+zstd.1.5.7" }\naws-lc-sys = { path = "../aws-lc-rs/aws-lc-sys" }' Cargo.toml
+  cat >> Cargo.toml <<END
+
+[patch.'https://github.com/zed-industries/livekit-rust-sdks']
+webrtc-sys = { path = "../livekit-rust-sdks/webrtc-sys" }
+END
 
   # change git config so `pet*` crates would be fetched without error. requires Windows registry
   # changes, see
@@ -88,6 +116,7 @@ prepare() {
 build() {
   cd "${_realname}"
 
+  export CC=clang CXX=clang++
   export PROTOC="${MINGW_PREFIX}/bin/protoc.exe"
   export PROTOC_INCLUDE="${MINGW_PREFIX}/include"
   export OPENSSL_NO_VENDOR=1
@@ -100,9 +129,10 @@ build() {
   export ZED_UPDATE_EXPLANATION='Updates are handled by pacman'
   export CARGO_PROFILE_RELEASE_DEBUG=0
   export RELEASE_VERSION="${pkgver} (Rev${pkgrel}, Built by MSYS2 project)"
-  # should be synced with .cargo/config.toml. use lld linker to fix keyboard shortcuts
-  # https://github.com/msys2/MINGW-packages/issues/22071
-  export RUSTFLAGS="$RUSTFLAGS -C link-arg=-fuse-ld=lld -C symbol-mangling-version=v0
+  export LK_CUSTOM_WEBRTC="${srcdir}/win-${_webrtc_arch}-release"
+  # should be synced with .cargo/config.toml. use lld linker to fix keyboard shortcuts and clang to
+  # link webrtc https://github.com/msys2/MINGW-packages/issues/22071
+  export RUSTFLAGS="$RUSTFLAGS -C linker=clang -C link-arg=-fuse-ld=lld -C symbol-mangling-version=v0
     -C target-feature=-crt-static --cfg tokio_unstable --cfg windows_slim_errors"
 
   cargo build --release --frozen -p zed -p cli

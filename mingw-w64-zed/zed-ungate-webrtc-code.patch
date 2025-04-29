@@ -1,0 +1,70 @@
+--- a/crates/livekit_client/Cargo.toml
++++ b/crates/livekit_client/Cargo.toml
+@@ -29,6 +29,10 @@ gpui = { workspace = true, features = ["x11", "wayland"] }
+ gpui_tokio.workspace = true
+ http_client_tls.workspace = true
+ image.workspace = true
++libwebrtc = { rev = "80bb8f4c9112789f7c24cc98d8423010977806a6", git = "https://github.com/zed-industries/livekit-rust-sdks" }
++livekit = { rev = "80bb8f4c9112789f7c24cc98d8423010977806a6", git = "https://github.com/zed-industries/livekit-rust-sdks", features = [
++    "__rustls-tls"
++] }
+ livekit_api.workspace = true
+ log.workspace = true
+ nanoid.workspace = true
+@@ -39,12 +43,6 @@ tokio-tungstenite.workspace = true
+ util.workspace = true
+ workspace-hack.workspace = true
+ 
+-[target.'cfg(not(all(target_os = "windows", target_env = "gnu")))'.dependencies]
+-libwebrtc = { rev = "80bb8f4c9112789f7c24cc98d8423010977806a6", git = "https://github.com/zed-industries/livekit-rust-sdks" }
+-livekit = { rev = "80bb8f4c9112789f7c24cc98d8423010977806a6", git = "https://github.com/zed-industries/livekit-rust-sdks", features = [
+-    "__rustls-tls"
+-] }
+-
+ [target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
+ scap.workspace = true
+ 
+--- a/crates/livekit_client/src/lib.rs
++++ b/crates/livekit_client/src/lib.rs
+@@ -3,36 +3,16 @@ use collections::HashMap;
+ mod remote_video_track_view;
+ pub use remote_video_track_view::{RemoteVideoTrackView, RemoteVideoTrackViewEvent};
+ 
+-#[cfg(not(any(
+-    test,
+-    feature = "test-support",
+-    all(target_os = "windows", target_env = "gnu")
+-)))]
++#[cfg(not(any(test, feature = "test-support",)))]
+ mod livekit_client;
+-#[cfg(not(any(
+-    test,
+-    feature = "test-support",
+-    all(target_os = "windows", target_env = "gnu")
+-)))]
++#[cfg(not(any(test, feature = "test-support",)))]
+ pub use livekit_client::*;
+ 
+-#[cfg(any(
+-    test,
+-    feature = "test-support",
+-    all(target_os = "windows", target_env = "gnu")
+-))]
++#[cfg(any(test, feature = "test-support",))]
+ mod mock_client;
+-#[cfg(any(
+-    test,
+-    feature = "test-support",
+-    all(target_os = "windows", target_env = "gnu")
+-))]
++#[cfg(any(test, feature = "test-support",))]
+ pub mod test;
+-#[cfg(any(
+-    test,
+-    feature = "test-support",
+-    all(target_os = "windows", target_env = "gnu")
+-))]
++#[cfg(any(test, feature = "test-support",))]
+ pub use mock_client::*;
+ 
+ #[derive(Debug, Clone)]
