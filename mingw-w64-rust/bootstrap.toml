@@ -35,6 +35,7 @@ sysconfdir = "etc"
 
 [rust]
 #debug = true
+codegen-units = 1
 codegen-units-std = 1
 #debuginfo-level-std = 2
 channel = "stable"
