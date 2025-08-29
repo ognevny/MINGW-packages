@@ -4,7 +4,7 @@ _realname=pm2
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=6.0.8
-pkgrel=1
+pkgrel=2
 pkgdesc='Node.js Production Process Manager with a built-in Load Balancer (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -13,15 +13,29 @@ msys2_repository_url='https://github.com/Unitech/pm2'
 msys2_references=(
   'purl: pkg:npm/webpack-cli'
 )
-license=('spdx:AGPL-3.0-or-later')
+license=('spdx:AGPL-3.0-or-later AND MIT')
 depends=("${MINGW_PACKAGE_PREFIX}-nodejs")
-source=("https://registry.npmjs.org/${_realname}/-/${_realname}-${pkgver}.tgz")
-sha256sums=('b7842cbf4b989d68d325cfa29e2b2bbb21daf2618683d74cbea9f8e64e6acb58')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc" 'git')
+source=("https://registry.npmjs.org/${_realname}/-/${_realname}-${pkgver}.tgz"
+        "git+https://github.com/MarkTiedemann/fastlist#commit=afa3a3c419db7bc34aa216facee3aee299ce4462")
+sha256sums=('b7842cbf4b989d68d325cfa29e2b2bbb21daf2618683d74cbea9f8e64e6acb58'
+            'ab7983b4f680389e41de56323989bec53cdf5e155c223a2f6d12cdcb42d9a8c7')
 noextract=("${_realname}-${pkgver}.tgz")
+
+# pm2-sysmonit distributes prebuilt fastlist.exe
+build() {
+  cd fastlist
+
+  sed -i '/atlbase\.h/d' fastlist.cpp
+  c++ -o fastlist.exe fastlist.cpp ${CXXFLAGS} -lkernel32
+}
 
 package() {
   npm install -g \
     --cache npm-cache \
     --prefix "${pkgdir}${MINGW_PREFIX}" \
     "${_realname}-${pkgver}.tgz"
+
+  install -Dm755 fastlist/fastlist.exe \
+    "${pkgdir}${MINGW_PREFIX}"/lib/node_modules/pm2/node_modules/pm2-sysmonit/src/fastlist.exe
 }
