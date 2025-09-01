@@ -1,3 +1,9 @@
+From c8a7600f9bee5d605b5559dda16b7ae09a17beba Mon Sep 17 00:00:00 2001
+From: Biswapriyo Nath <nathbappai@gmail.com>
+Date: Tue, 5 Nov 2024 06:33:12 +0000
+Subject: [PATCH] headers-git: Workaround redefinition error in
+ windows.foundation.h
+
 diff --git a/mingw-w64-headers/include/windows.foundation.h b/mingw-w64-headers/include/windows.foundation.h
 index 8be88e4..95aa62d 100644
 --- a/mingw-w64-headers/include/windows.foundation.h
