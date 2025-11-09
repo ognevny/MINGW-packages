@@ -1,0 +1,61 @@
+# Maintainer: Maksim Bondarenkov <maksapple@gmail.com>
+
+_realname=magika
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.0.1
+_tag=cli-v1.0.1
+pkgrel=1
+pkgdesc="Fast and accurate AI powered file content types detection (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://securityresearch.google/magika'
+msys2_repository_url='https://github.com/google/magika'
+license=('spdx:Apache-2.0')
+depends=("${MINGW_PACKAGE_PREFIX}-openssl"
+         "${MINGW_PACKAGE_PREFIX}-onnx")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf")
+source=("${msys2_repository_url}/archive/${_tag/-/\/}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('a1574996fadb4fc262e0d652dc9b8d6a837c0911e620245afe9d1ea3881ebfd7')
+
+prepare() {
+  cd "${_realname}-${_tag}"
+
+  cargo fetch \
+    --locked \
+    --target "${RUST_CHOST}" \
+    --manifest-path=rust/cli/Cargo.toml
+}
+
+build() {
+  cd "${_realname}-${_tag}"
+
+  export OPENSSL_NO_VENDOR=1
+  cargo build \
+    --release \
+    --frozen \
+    --manifest-path=rust/cli/Cargo.toml
+}
+
+check() {
+  cd "${_realname}-${_tag}"
+
+  cargo test \
+    --release \
+    --frozen \
+    --manifest-path=rust/cli/Cargo.toml
+}
+
+package() {
+  cd "${_realname}-${_tag}"
+
+  cargo install \
+    --offline \
+    --no-track \
+    --frozen \
+    --path rust/cli \
+    --root "${pkgdir}${MINGW_PREFIX}"
+
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
