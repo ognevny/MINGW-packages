@@ -32,7 +32,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
 source=("git+https://github.com/denoland/deno.git#tag=v${pkgver}"
         "v8-${_rusty_v8_ver}.tar.gz::https://crates.io/api/v1/crates/v8/${_rusty_v8_ver}/download"
         "001-rusty-v8-dyn.patch"
-        "002-deno.patch")
+        "002-deno-mingw-build.patch")
 sha256sums=('90a5202e1a7ccfdff5c190800961bc5a8c9f83e893f258cae9f19a24af54fa12'
             '8741c1f33d1ebf6c81f53fbb0c66fdd7a2b55feeead0ec40ec9468b387d67176'
             '9fb6a44e1dddf142fa58e17d7cbaab38d10745e599f06b2e0d022939bafc82d6'
@@ -53,7 +53,7 @@ prepare() {
   patch -p1 -i "${srcdir}"/001-rusty-v8-dyn.patch
   cd "${srcdir}"/deno
   echo ":: Patching deno source"
-  patch -p1 -i "${srcdir}"/002-deno.patch
+  patch -p1 -i "${srcdir}"/002-deno-mingw-build.patch
   echo -e "\n[patch.crates-io]\nv8.path = '../v8-${_rusty_v8_ver}'" >> Cargo.toml
 
   rm rust-toolchain.toml
