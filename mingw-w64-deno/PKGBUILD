@@ -30,7 +30,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
              "${MINGW_PACKAGE_PREFIX}-rust-bindgen"
              'git')
 source=("git+https://github.com/denoland/deno.git#tag=v${pkgver}"
-        "v8.tar.gz::https://crates.io/api/v1/crates/v8/${_rusty_v8_ver}/download"
+        "v8-${_rusty_v8_ver}.tar.gz::https://crates.io/api/v1/crates/v8/${_rusty_v8_ver}/download"
         "001-rusty-v8-dyn.patch"
         "002-deno.patch")
 sha256sums=('90a5202e1a7ccfdff5c190800961bc5a8c9f83e893f258cae9f19a24af54fa12'
