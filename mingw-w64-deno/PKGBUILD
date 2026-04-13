@@ -52,6 +52,7 @@ prepare() {
   echo ":: Patching rusty_v8 source"
   patch -p1 -i "${srcdir}"/001-rusty-v8-dyn.patch
   cd "${srcdir}"/deno
+  echo ":: Patching deno source"
   patch -p1 -i "${srcdir}"/002-deno.patch
   echo -e "\n[patch.crates-io]\nv8.path = '../v8-${_rusty_v8_ver}'" >> Cargo.toml
 
