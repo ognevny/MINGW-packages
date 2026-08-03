@@ -4,7 +4,7 @@ _realname=gram
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=3.2.0
-pkgrel=1
+pkgrel=2
 pkgdesc="A code editor for humanoid apes and grumpy toads (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -51,7 +51,7 @@ sha256sums=('e2abbbdbafff37c09bbd1bc2d24bdd65945816ba29135ef78169fe2924f7004c'
             '8946282db6a225b385729deb345b57e3ee75f4e859dbbc49ab7bc5604d71192f'
             '053d09f18bc3029ece051e59d125f8952ec847b1b8fbc21b605edde86d1c2f63'
             'e0918deb70ceafa5c8f99a2ffefa98da2b4139fb4b0190f51c06a8fcb86decfb'
-            '9a9338f29dcf5e383bca56ad0ce97f524be5fde21acc240be1056ef3833bbd48'
+            'ebc7344adbd3a6acc8f608374ba655b8737ef27bf249d7fe4f8e255dc3c3dc3a'
             '48f4900ceb02d3aaf9a1020f33d56629156e96759f456c0e7ca18bfcf910767b')
 
 prepare() {
@@ -76,8 +76,7 @@ prepare() {
     git config --global core.longpaths true
   fi
 
-  cargo update -p zstd-sys
-  cargo update -p embed-resource --precise 3.0.9
+  cargo update -p zstd-sys -p embed-resource
   cargo fetch --locked --target "${RUST_CHOST}"
 }
 

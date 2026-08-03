@@ -1,6 +1,6 @@
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -787,10 +787,7 @@
+@@ -787,10 +787,8 @@
    rev = "b4486cd71e4e94fbda54ce6302444de14f4d190e"
  }
  calloop = { git = "https://github.com/zed-industries/calloop" }
@@ -9,6 +9,7 @@
 -  rev = "a70e2d9986e931f2b883b661bf8f4471c5398b7e"
 -}
 +protobuf-src.path = "../rust-protobuf-native/protobuf-src"
++embed-resource = { git = "https://github.com/nabijaczleweli/rust-embed-resource", rev = "5819ec1331a9188570d1532f2b5aa2e2e247d9a1" }
  
  [profile.dev]
  opt-level = 1
